@@ -1,4 +1,4 @@
-package walterrocks91;
+package me.walterrocks91;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -6,6 +6,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 
 @SuppressWarnings("all")
@@ -62,7 +63,7 @@ public abstract class DBApi implements Plugin {
 
     public static void sendDBMessage(CommandSender c, String msg) {
         if (msg.contains("&")) {
-            msg = msg.replaceAll("&", "�");
+            msg = msg.replaceAll("&", "§");
         }
         c.sendMessage(dbinstance.tag + msg);
     }
@@ -82,7 +83,7 @@ public abstract class DBApi implements Plugin {
 
     public static void broadcastDBMessage(String msg) {
         if (msg.contains("&")) {
-            msg = msg.replaceAll("&", "�");
+            msg = msg.replaceAll("&", "§");
         }
         dbinstance.getServer().broadcastMessage(dbinstance.tag + msg);
     }
@@ -106,59 +107,80 @@ public abstract class DBApi implements Plugin {
         } else {
             level = 1;
         }
-        p.kickPlayer(kickReason.replaceAll("&", "�"));
+        p.kickPlayer(kickReason.replaceAll("&", "§"));
+        List<String> banned = instance.getConfig().getStringList(
+                "bannedplayers");
+        banned.add(p.getName());
+        instance.getConfig().set("bannedplayers", banned);
+        saveCustomConfig();
         if (tf == TimeFrame.MINUTE) {
             getBans().set(p.getUniqueId().toString(), true);
-            dbinstance
-                    .getServer()
-                    .getScheduler()
-                    .scheduleSyncDelayedTask(dbinstance,
+            dbinstance.getServer().getScheduler()
+                    .scheduleSyncDelayedTask(
+                            dbinstance,
                             new Runnable() {
                                 public void run() {
                                     getBans().set(p.getUniqueId().toString(),
                                             false);
+                                    List<String> banned = instance.getConfig()
+                                            .getStringList("bannedplayers");
+                                    banned.remove(p.getName());
+                                    instance.getConfig().set("bannedplayers",
+                                            banned);
                                 }
                             },
                             (dbinstance.getConfig().getInt("banlength") * 20 * 60)
                                     / level);
         } else if (tf == TimeFrame.HOUR) {
             getBans().set(p.getUniqueId().toString(), true);
-            dbinstance
-                    .getServer()
-                    .getScheduler()
-                    .scheduleSyncDelayedTask(dbinstance,
+            dbinstance.getServer().getScheduler()
+                    .scheduleSyncDelayedTask(
+                            dbinstance,
                             new Runnable() {
                                 public void run() {
                                     getBans().set(p.getUniqueId().toString(),
                                             false);
+                                    List<String> banned = instance.getConfig()
+                                            .getStringList("bannedplayers");
+                                    banned.remove(p.getName());
+                                    instance.getConfig().set("bannedplayers",
+                                            banned);
                                 }
                             },
                             (dbinstance.getConfig().getInt("banlength") * 20 * 60 * 60)
                                     / level);
         } else if (tf == TimeFrame.DAY) {
             getBans().set(p.getUniqueId().toString(), true);
-            dbinstance
-                    .getServer()
-                    .getScheduler()
-                    .scheduleSyncDelayedTask(dbinstance,
+            dbinstance.getServer().getScheduler()
+                    .scheduleSyncDelayedTask(
+                            dbinstance,
                             new Runnable() {
                                 public void run() {
                                     getBans().set(p.getUniqueId().toString(),
                                             false);
+                                    List<String> banned = instance.getConfig()
+                                            .getStringList("bannedplayers");
+                                    banned.remove(p.getName());
+                                    instance.getConfig().set("bannedplayers",
+                                            banned);
                                 }
                             },
                             (dbinstance.getConfig().getInt("banlength") * 20 * 60 * 60 * 24)
                                     / level);
         } else {
             getBans().set(p.getUniqueId().toString(), true);
-            dbinstance
-                    .getServer()
-                    .getScheduler()
-                    .scheduleSyncDelayedTask(dbinstance,
+            dbinstance.getServer().getScheduler()
+                    .scheduleSyncDelayedTask(
+                            dbinstance,
                             new Runnable() {
                                 public void run() {
                                     getBans().set(p.getUniqueId().toString(),
                                             false);
+                                    List<String> banned = instance.getConfig()
+                                            .getStringList("bannedplayers");
+                                    banned.remove(p.getName());
+                                    instance.getConfig().set("bannedplayers",
+                                            banned);
                                 }
                             },
                             (dbinstance.getConfig().getInt("banlength") * 20)
@@ -188,7 +210,7 @@ public abstract class DBApi implements Plugin {
         } else {
             level = 1;
         }
-        p.kickPlayer(kickReason.replaceAll("&", "�"));
+        p.kickPlayer(kickReason.replaceAll("&", "§"));
         if (tf == TimeFrame.MINUTE) {
             getBans().set(p.getUniqueId().toString(), true);
             dbinstance
@@ -327,4 +349,7 @@ public abstract class DBApi implements Plugin {
         }
     }
 
+    public static List<String> getBannedPlayers() {
+        return instance.getConfig().getStringList("bannedplayers");
+    }
 }

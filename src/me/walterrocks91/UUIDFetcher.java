@@ -1,4 +1,4 @@
-package walterrocks91;
+package me.walterrocks91;
 
 import com.google.common.collect.ImmutableList;
 import org.json.simple.JSONArray;

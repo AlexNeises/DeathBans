@@ -1,4 +1,4 @@
-package walterrocks91;
+package me.walterrocks91;
 
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
@@ -118,7 +118,7 @@ public class Updater {
      * @param file     The file that the plugin is running from, get this by doing
      *                 this.getFile() from within your main class.
      * @param type     Specify the type of update this will be. See
-     *                 {@link walterrocks91.Updater.UpdateType}
+     *                 {@link Updater.UpdateType}
      * @param announce True if the program should announce the progress of new
      *                 updates in console.
      */
@@ -135,7 +135,7 @@ public class Updater {
      * @param file     The file that the plugin is running from, get this by doing
      *                 this.getFile() from within your main class.
      * @param type     Specify the type of update this will be. See
-     *                 {@link walterrocks91.Updater.UpdateType}
+     *                 {@link Updater.UpdateType}
      * @param callback The callback instance to notify when the Updater has finished
      */
     public Updater(Plugin plugin, int id, File file, UpdateType type,
@@ -151,7 +151,7 @@ public class Updater {
      * @param file     The file that the plugin is running from, get this by doing
      *                 this.getFile() from within your main class.
      * @param type     Specify the type of update this will be. See
-     *                 {@link walterrocks91.Updater.UpdateType}
+     *                 {@link Updater.UpdateType}
      * @param callback The callback instance to notify when the Updater has finished
      * @param announce True if the program should announce the progress of new
      *                 updates in console.
@@ -240,7 +240,7 @@ public class Updater {
      * Get the result of the update process.
      *
      * @return result of the update process.
-     * @see walterrocks91.Updater.UpdateResult
+     * @see Updater.UpdateResult
      */
     public UpdateResult getResult() {
         this.waitForThread();
@@ -251,7 +251,7 @@ public class Updater {
      * Get the latest version's release type.
      *
      * @return latest version's release type.
-     * @see walterrocks91.Updater.ReleaseType
+     * @see Updater.ReleaseType
      */
     public ReleaseType getLatestType() {
         this.waitForThread();

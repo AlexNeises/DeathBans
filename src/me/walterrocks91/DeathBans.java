@@ -1,7 +1,5 @@
 package me.walterrocks91;
 
-import me.walterrocks91.Updater.UpdateResult;
-import me.walterrocks91.Updater.UpdateType;
 import org.bukkit.ChatColor;
 import org.bukkit.command.BlockCommandSender;
 import org.bukkit.command.Command;
@@ -27,151 +25,135 @@ import java.util.UUID;
 
 @SuppressWarnings("all")
 public class DeathBans extends JavaPlugin implements Listener {
+
+    // Instance of this class.
     public static DeathBans instance;
-    public static HashSet<CommandSender> udconfirm = new HashSet<CommandSender>();
-
-    // §
-    private static HashSet<Boolean> downloaded = new HashSet<>();
-    public String timeframe = getConfig().getString("timeframe");
-
-    // ID: 89802
+    // Used for confirming forced updates.
+    public static HashSet<CommandSender> udconfirm = new HashSet();
+    // Used to test if a update has already been downloaded before
+    // reloading/restarting.
+    private static HashSet<Boolean> downloaded = new HashSet();
+    // Date Format for ban times.
     SimpleDateFormat sdf = new SimpleDateFormat("hh:mm:ss a");
+    // Getting the prefix for all commands.
     String tag = getConfig().getString("messages.prefix").replaceAll("&", "§")
             + " ";
+    // Files.
     File config = new File(getDataFolder(), "config.yml");
     File deathbans = new File(getDataFolder(), "bans.yml");
+    File lives = new File(getDataFolder(), "lives.yml");
+    File bantimes = new File(getDataFolder(), "bantimes.yml");
+    File banned = new File(getDataFolder(), "bannedplayers.yml");
+    // Configs
     FileConfiguration bans = YamlConfiguration
             .loadConfiguration(this.deathbans);
-    File lives = new File(getDataFolder(), "lives.yml");
-
-    // Configuration Files
     FileConfiguration life = YamlConfiguration.loadConfiguration(this.lives);
-    File bantimes = new File(getDataFolder(), "bantimes.yml");
     FileConfiguration dates = YamlConfiguration
             .loadConfiguration(this.bantimes);
+    FileConfiguration ban = YamlConfiguration.loadConfiguration(this.banned);
+    // Getting the timeframe from the config as a string.
+    private String timeframe = getConfig().getString("timeframe");
+    // Testing if donor perms are enabled.
     private boolean donorenabled = getConfig().getBoolean("donorperms.enabled");
-    private HashSet<CommandSender> confirm = new HashSet<CommandSender>();
+    // Used for testing if deathbans reset is confirmed.
+    private HashSet<CommandSender> confirm = new HashSet();
 
-    // On enable.
+    // On enable (lots of random config based stuff)
     public void onEnable() {
-        // Check missing config statements.
-        if (!getConfig().contains("banlength")) {
-            getConfig().set("banlength", 90);
-        }
-        if (!getConfig().contains("timeframe")) {
-            getConfig().set("timeframe", "MINUTE");
-        }
-        if (!getConfig().contains("startinglives")) {
-            getConfig().set("startinglives", 1);
-        }
-        if (!getConfig().contains("update")) {
-            getConfig().set("update", false);
-        }
-        if (!getConfig().contains("misc.join-message-enabled")) {
-            getConfig().set("misc.join-message-enabled", true);
-        }
-        if (!getConfig().contains("misc.leave-message-enabled")) {
-            getConfig().set("misc.leave-message-enabled", true);
-        }
-        if (!getConfig().contains("misc.death-message-enabled")) {
-            getConfig().set("misc.death-message-enabled", true);
-        }
-        if (!getConfig().contains("messages.kick-message")) {
-            getConfig().set("messages.kick-message", "&c&lYou have died.");
-        }
-        if (!getConfig().contains("messages.player-banned-join-message")) {
-            getConfig()
-                    .set("messages.player-banned-join-message",
-                            "&c&lYou have been killed, you are not permitted to join the server yet.");
-        }
-        if (!getConfig().contains("messages.prefix")) {
-            getConfig().set("messages.prefix", "&f[&cDeathBans&f]");
-        }
-        if (!getConfig().contains("donorperms.enabled")) {
-            getConfig().set("donorperms.enabled", false);
-        }
-        if (!getConfig().contains("donorperms.level1")) {
-            getConfig().set("donorperms.level1", "deathbans.donorone");
-        }
-        if (!getConfig().contains("donorperms.level2")) {
-            getConfig().set("donorperms.level2", "deathbans.donortwo");
-        }
-        if (!getConfig().contains("donorperms.level3")) {
-            getConfig().set("donorperms.level3", "deathbans.donorthree");
-        }
-        if (!getConfig().contains("donorperms.level4")) {
-            getConfig().set("donorperms.level4", "deathbans.donorfour");
-        }
-        if (!getConfig().contains("donorperms.level5")) {
-            getConfig().set("donorperms.level5", "deathbans.donorfive");
-        }
-        if (!getConfig().contains("bannedplayers")) {
-            instance.getConfig().set("bannedplayers", new ArrayList<String>());
-        }
-        saveConfig();
         instance = this;
         DBApi.dbinstance = this;
+        DBApi.updateConfig(getConfig(), "banlength", 90);
+        DBApi.updateConfig(getConfig(), "timeframe", "MINUTE");
+        DBApi.updateConfig(getConfig(), "startinglives", 1);
+        DBApi.updateConfig(getConfig(), "update", false);
+        DBApi.updateConfig(getConfig(), "misc.join-message-enabled", false);
+        DBApi.updateConfig(getConfig(), "misc.leave-message-enabled", false);
+        DBApi.updateConfig(getConfig(), "misc.death-message-enabled", false);
+        DBApi.updateConfig(getConfig(), "messages.kick-message",
+                "&c&lYou have died.");
+        DBApi.updateConfig(getConfig(), "messages.player-banned-join-message",
+                "&c&lYou have been killed, you are not permitted to join the server yet.");
+        DBApi.updateConfig(getConfig(), "messages.prefix", "&f[&cDeathBans&f]");
+        DBApi.updateConfig(getConfig(), "donorperms.enabled", false);
+        DBApi.updateConfig(getConfig(), "donorperms.level1",
+                "deathbans.donorone");
+        DBApi.updateConfig(getConfig(), "donorperms.level2",
+                "deathbans.donortwo");
+        DBApi.updateConfig(getConfig(), "donorperms.level3",
+                "deathbans.donorthree");
+        DBApi.updateConfig(getConfig(), "donorperms.level4",
+                "deathbans.donorfour");
+        DBApi.updateConfig(getConfig(), "donorperms.level5",
+                "deathbans.donorfive");
+        DBApi.updateConfig(ban, "bannedplayers", new ArrayList<String>());
         getServer().getScheduler().scheduleSyncDelayedTask(this,
                 new Runnable() {
                     public void run() {
-                        if (getConfig().getBoolean("update")) {
+                        if (DeathBans.this.getConfig().getBoolean("update")) {
                             Updater ud = new Updater(DeathBans.instance, 89802,
-                                    getFile(), UpdateType.NO_DOWNLOAD, false);
-                            if (ud.getResult() == UpdateResult.UPDATE_AVAILABLE) {
+                                    DeathBans.this.getFile(),
+                                    Updater.UpdateType.NO_DOWNLOAD, false);
+                            if (ud.getResult() == Updater.UpdateResult.UPDATE_AVAILABLE) {
                                 Updater update = new Updater(
-                                        DeathBans.instance, 89802, getFile(),
-                                        UpdateType.DEFAULT, true);
-                                if (update.getResult() == UpdateResult.SUCCESS) {
-                                    DBApi.sendDBMessage(getServer()
-                                                    .getConsoleSender(),
+                                        DeathBans.instance, 89802,
+                                        DeathBans.this.getFile(),
+                                        Updater.UpdateType.DEFAULT, true);
+                                if (update.getResult() == Updater.UpdateResult.SUCCESS) {
+                                    DBApi.sendDBMessage(DeathBans.this
+                                                    .getServer().getConsoleSender(),
                                             "&aDownloaded latest DeathBans file, reloading to make these changes.");
-                                    getServer().reload();
+                                    DeathBans.this.getServer().reload();
                                 }
                             }
                         }
                     }
-                }, 5 * 20);
+                }, 100L);
 
         getServer().getPluginManager().registerEvents(this, this);
-        if (!config.exists()) {
+        if (!this.config.exists()) {
             saveDefaultConfig();
         }
-        if (!deathbans.exists()) {
+        if (!this.deathbans.exists()) {
             try {
-                bans.save(deathbans);
+                this.bans.save(this.deathbans);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-        if (!lives.exists()) {
+        if (!this.lives.exists()) {
             try {
-                life.save(lives);
+                this.life.save(this.lives);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-        if (!bantimes.exists()) {
+        if (!this.bantimes.exists()) {
             try {
-                dates.save(bantimes);
+                this.dates.save(this.bantimes);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        if (!this.banned.exists()) {
+            try {
+                this.ban.save(this.banned);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    // On disable.
+    // Saving configuration files on disable.
     public void onDisable() {
+        saveConfig();
         DBApi.saveCustomConfig();
     }
 
-    // DeathBans Commands
-    @Override
+    // Commands.
     public boolean onCommand(CommandSender p, Command cmd, String cmdLabel,
                              String[] args) {
-        if (cmdLabel.equalsIgnoreCase("deathbans")
-                && !(p instanceof BlockCommandSender)
-                || cmdLabel.equalsIgnoreCase("db")
-                && !(p instanceof BlockCommandSender)) {
+        if (((cmdLabel.equalsIgnoreCase("deathbans")) && (!(p instanceof BlockCommandSender)))
+                || ((cmdLabel.equalsIgnoreCase("db")) && (!(p instanceof BlockCommandSender)))) {
             if ((p.hasPermission("deathbans.admin"))
                     || (p.hasPermission("deathbans.*"))) {
                 if (args.length <= 0) {
@@ -201,29 +183,24 @@ public class DeathBans extends JavaPlugin implements Listener {
                 } else {
                     if (args[0].equalsIgnoreCase("list")) {
                         DBApi.sendDBMessage(p, "&eCurrently banned players:");
-                        if (getConfig().getStringList("bannedplayers")
-                                .isEmpty()) {
-                            getConfig().set("bannedplayers",
-                                    new ArrayList<String>());
+                        if (ban.getStringList("bannedplayers").isEmpty()) {
                             DBApi.sendDBMessage(p, "- NONE");
-                            saveConfig();
                         }
-                        for (String s : getConfig().getStringList(
-                                "bannedplayers")) {
+                        for (String s : ban.getStringList("bannedplayers")) {
                             DBApi.sendDBMessage(p, "- " + s);
                         }
                         return true;
                     }
                     if (args[0].equalsIgnoreCase("forceupdate")) {
                         if (getConfig().getBoolean("update")) {
-                            if (downloaded.contains(true)) {
+                            if (downloaded.contains(Boolean.valueOf(true))) {
                                 DBApi.sendDBMessage(p,
                                         "&cUpdate already downloaded, please reload/restart your server!");
                                 return true;
                             }
                             Updater ud = new Updater(this, 89802, getFile(),
-                                    UpdateType.NO_DOWNLOAD, false);
-                            if (ud.getResult() == UpdateResult.UPDATE_AVAILABLE) {
+                                    Updater.UpdateType.NO_DOWNLOAD, false);
+                            if (ud.getResult() == Updater.UpdateResult.UPDATE_AVAILABLE) {
                                 if (!udconfirm.contains(p)) {
                                     udconfirm.add(p);
                                     DBApi.sendDBMessage(p,
@@ -231,22 +208,23 @@ public class DeathBans extends JavaPlugin implements Listener {
                                     return true;
                                 }
                                 Updater update = new Updater(this, 89802,
-                                        getFile(), UpdateType.DEFAULT, true);
+                                        getFile(), Updater.UpdateType.DEFAULT,
+                                        true);
                                 DBApi.sendDBMessage(p,
                                         "&aDownloading latest DeathBans file.");
                                 udconfirm.remove(p);
-                                if (update.getResult() == UpdateResult.SUCCESS) {
+                                if (update.getResult() == Updater.UpdateResult.SUCCESS) {
                                     DBApi.sendDBMessage(
                                             p,
                                             "&aDownloaded latest DeathBans file, please reload/restart to make these changes.");
-                                    downloaded.add(true);
+                                    downloaded.add(Boolean.valueOf(true));
                                 }
                             } else {
                                 DBApi.sendDBMessage(p,
                                         "&cNo updates are currently available.");
                             }
+                            return true;
                         }
-                        return true;
                     }
                     if (args[0].equalsIgnoreCase("reload")) {
                         reloadConfig();
@@ -255,19 +233,19 @@ public class DeathBans extends JavaPlugin implements Listener {
                         return true;
                     }
                     if (args[0].equalsIgnoreCase("reset")) {
-                        if (p instanceof Player) {
+                        if ((p instanceof Player)) {
                             DBApi.sendDBMessage(p,
                                     "&cOnly the console can do that!");
                             return true;
                         }
-                        if (!confirm.contains(p)) {
-                            confirm.add(p);
+                        if (!this.confirm.contains(p)) {
+                            this.confirm.add(p);
                             DBApi.sendDBMessage(
                                     p,
                                     "&aAre you sure you want to reset ALL deathbans? type /deathbans reset again to confirm.");
                             return true;
                         }
-                        deathbans.delete();
+                        this.deathbans.delete();
                         try {
                             DBApi.resetDeathBans();
                             DBApi.sendDBMessage(p,
@@ -275,13 +253,13 @@ public class DeathBans extends JavaPlugin implements Listener {
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
-                        confirm.remove(p);
+                        this.confirm.remove(p);
                         reloadConfig();
                         return true;
                     }
                     if (args[0].equalsIgnoreCase("unban")) {
                         if (args.length <= 1) {
-                            p.sendMessage(tag + ChatColor.RED
+                            p.sendMessage(this.tag + ChatColor.RED
                                     + "Invalid arguments.");
                             return true;
                         }
@@ -315,15 +293,14 @@ public class DeathBans extends JavaPlugin implements Listener {
                                             + " lives. Total lives: "
                                             + DBApi.getLives(pl));
                             return true;
-                        } else {
-                            DBApi.sendDBMessage(p, "&cInvalid player.");
                         }
+                        DBApi.sendDBMessage(p, "&cInvalid player.");
 
                         return true;
                     }
                     if (args[0].equalsIgnoreCase("takelives")) {
                         if (args.length <= 2) {
-                            p.sendMessage(tag + ChatColor.RED
+                            p.sendMessage(this.tag + ChatColor.RED
                                     + "Invalid arguments.");
                             return true;
                         }
@@ -430,17 +407,15 @@ public class DeathBans extends JavaPlugin implements Listener {
                         DBApi.sendDBMessage(p, "&cInvalid args.");
                     }
                     return true;
-                } else {
-                    DBApi.sendDBMessage(p, "&cInvalid subcommand.");
-                    return true;
                 }
+                DBApi.sendDBMessage(p, "&cInvalid subcommand.");
+                return true;
             }
         }
         return true;
     }
 
-    // Events
-
+    // Join messages & lives.
     @EventHandler
     public void onJoin(PlayerJoinEvent e) {
         if (!getConfig().getBoolean("misc.join-message-enabled")) {
@@ -448,11 +423,13 @@ public class DeathBans extends JavaPlugin implements Listener {
         }
         Player p = e.getPlayer();
         if (!p.hasPlayedBefore()) {
-            this.life.set(p.getName(), getConfig().getInt("startinglives"));
+            this.life.set(p.getName(),
+                    Integer.valueOf(getConfig().getInt("startinglives")));
             DBApi.saveCustomConfig();
         }
     }
 
+    // Leave messages.
     @EventHandler
     public void onLeave(PlayerQuitEvent e) {
         if (!getConfig().getBoolean("misc.leave-message-enabled")) {
@@ -460,6 +437,7 @@ public class DeathBans extends JavaPlugin implements Listener {
         }
     }
 
+    // Live handling & ban handling.
     @EventHandler
     public void onDeath(PlayerDeathEvent e) {
         if (!getConfig().getBoolean("misc.death-message-enabled")) {
@@ -470,9 +448,9 @@ public class DeathBans extends JavaPlugin implements Listener {
         if (!p.hasPermission("deathbans.exempt")) {
             if (DBApi.getLives(p) == 0) {
                 DBApi.getDates().set(p.getUniqueId().toString(),
-                        sdf.format(new Date()));
-                TimeFrame tf = TimeFrame.valueOf(timeframe.toUpperCase());
-                if (donorenabled) {
+                        this.sdf.format(new Date()));
+                TimeFrame tf = TimeFrame.valueOf(this.timeframe.toUpperCase());
+                if (this.donorenabled) {
                     DonorLevel l = DonorLevel.ZERO;
                     if (p.hasPermission(getConfig().getString(
                             "donorperms.level1"))) {
@@ -501,13 +479,14 @@ public class DeathBans extends JavaPlugin implements Listener {
                 }
             } else {
                 DBApi.changeLives(p, 1, Method.SUBTRACTION);
-                p.sendMessage(tag + ChatColor.GREEN
+                p.sendMessage(this.tag + ChatColor.GREEN
                         + "You have died, you now have " + DBApi.getLives(p)
                         + " lives left.");
             }
         }
     }
 
+    // Handling logins for bans.
     @EventHandler
     public void onJoin(AsyncPlayerPreLoginEvent e) {
         UUID uuid = e.getUniqueId();
@@ -529,8 +508,8 @@ public class DeathBans extends JavaPlugin implements Listener {
                 color = true;
             }
             String time = DBApi.getDates().getString(uuid.toString());
-            String when = "" + getConfig().getInt("banlength");
-            if (color && timebanned && lasts) {
+            int when = getConfig().getInt("banlength");
+            if ((color) && (timebanned) && (lasts)) {
                 e.disallow(
                         AsyncPlayerPreLoginEvent.Result.KICK_BANNED,
                         getConfig()
@@ -540,9 +519,10 @@ public class DeathBans extends JavaPlugin implements Listener {
                                 .replaceAll("&", "§")
                                 .replace(
                                         "[lasts]",
-                                        when + " " + timeframe.toLowerCase()
+                                        when + " "
+                                                + this.timeframe.toLowerCase()
                                                 + "s"));
-            } else if (color && timebanned) {
+            } else if ((color) && (timebanned)) {
                 e.disallow(
                         AsyncPlayerPreLoginEvent.Result.KICK_BANNED,
                         getConfig()
@@ -555,7 +535,7 @@ public class DeathBans extends JavaPlugin implements Listener {
                         getConfig().getString(
                                 "messages.player-banned-join-message")
                                 .replaceAll("&", "§"));
-            } else if (color && lasts) {
+            } else if ((color) && (lasts)) {
                 e.disallow(
                         AsyncPlayerPreLoginEvent.Result.KICK_BANNED,
                         getConfig()
@@ -564,9 +544,10 @@ public class DeathBans extends JavaPlugin implements Listener {
                                 .replaceAll("&", "§")
                                 .replace(
                                         "[lasts]",
-                                        when + " " + timeframe.toLowerCase()
+                                        when + " "
+                                                + this.timeframe.toLowerCase()
                                                 + "s"));
-            } else if (timebanned && lasts) {
+            } else if ((timebanned) && (lasts)) {
                 e.disallow(
                         AsyncPlayerPreLoginEvent.Result.KICK_BANNED,
                         getConfig()
@@ -575,15 +556,19 @@ public class DeathBans extends JavaPlugin implements Listener {
                                 .replace("[time]", time)
                                 .replace(
                                         "[lasts]",
-                                        when + " " + timeframe.toLowerCase()
+                                        when + " "
+                                                + this.timeframe.toLowerCase()
                                                 + "s"));
             } else if (lasts) {
                 e.disallow(
                         AsyncPlayerPreLoginEvent.Result.KICK_BANNED,
                         getConfig().getString(
-                                "messages.player-banned-join-message").replace(
-                                "[lasts]",
-                                when + " " + timeframe.toLowerCase() + "s"));
+                                "messages.player-banned-join-message")
+                                .replace(
+                                        "[lasts]",
+                                        when + " "
+                                                + this.timeframe.toLowerCase()
+                                                + "s"));
             } else if (timebanned) {
                 e.disallow(
                         AsyncPlayerPreLoginEvent.Result.KICK_BANNED,

@@ -1,0 +1,7 @@
+name: DeathBans
+main: com.alexneises.deathbans.DeathBans
+description: Automatically bans a player after death for a configurable amount of time
+version: 0.1
+author: amx15
+website: https://github.com/amx15## YAML Template.
+---

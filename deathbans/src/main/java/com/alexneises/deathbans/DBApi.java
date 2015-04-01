@@ -1,5 +1,14 @@
-package me.walterrocks91;
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package com.alexneises.deathbans;
 
+/**
+ *
+ * @author Neises
+ */
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;

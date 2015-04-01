@@ -1,0 +1,22 @@
+# Default Deathbans Config - TimeFrames: SECOND, MINUTE, HOUR,   # DAY - Message Variables: - [time] - [lasts]
+banlength: 90
+timeframe: MINUTE
+startinglives: 1
+update: false
+misc:
+  join-message-enabled: true
+  leave-message-enabled: true
+  death-message-enabled: true
+messages:
+  kick-message: '&c&lYou have died.'
+  player-banned-join-message: '&c&lYou have been killed, you are not permitted to join the server yet.'
+  prefix: '&f[&cDeathBans&f]'
+donorperms:
+  enabled: false
+  level1: 'deathbans.donorone'
+  level2: 'deathbans.donortwo'
+  level3: 'deathbans.donorthree'
+  level4: 'deathbans.donorfour'
+  level5: 'deathbans.donorfive'
+bannedplayers: []
+  

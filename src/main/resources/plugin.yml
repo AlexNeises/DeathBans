@@ -1,5 +1,5 @@
 name: DeathBans
-main: com.alexneises.deathbans
+main: com.alexneises.deathbans.DeathBans
 version: 3.3
 description: Provides deathbans.
 author: walterrocks91

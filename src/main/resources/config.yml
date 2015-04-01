@@ -1,6 +1,6 @@
 # Default Deathbans Config - TimeFrames: SECOND, MINUTE, HOUR,   # DAY - Message Variables: - [time] - [lasts]
-banlength: 90
-timeframe: SECOND
+banlength: 72
+timeframe: HOUR
 startinglives: 1
 update: false
 misc:
@@ -8,7 +8,7 @@ misc:
   leave-message-enabled: true
   death-message-enabled: true
 messages:
-  kick-message: 'You will be permitted to play again in 72 hours.'
+  kick-message: 'You have died and will be permitted to play again in 72 hours.'
   player-banned-join-message: 'You are still banned.'
   prefix: '&f[&cDeathBans&f]'
 donorperms:

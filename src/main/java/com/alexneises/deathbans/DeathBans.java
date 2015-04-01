@@ -71,15 +71,15 @@ public class DeathBans extends JavaPlugin implements Listener {
     public void onEnable() {
         instance = this;
         DBApi.dbinstance = this;
-        DBApi.updateConfig(getConfig(), "banlength", 90);
-        DBApi.updateConfig(getConfig(), "timeframe", "SECOND");
+        DBApi.updateConfig(getConfig(), "banlength", 72);
+        DBApi.updateConfig(getConfig(), "timeframe", "HOUR");
         DBApi.updateConfig(getConfig(), "startinglives", 1);
         DBApi.updateConfig(getConfig(), "update", false);
         DBApi.updateConfig(getConfig(), "misc.join-message-enabled", false);
         DBApi.updateConfig(getConfig(), "misc.leave-message-enabled", false);
         DBApi.updateConfig(getConfig(), "misc.death-message-enabled", false);
         DBApi.updateConfig(getConfig(), "messages.kick-message",
-                "&c&lYou will be permitted to play again in 72 hours.");
+                "You have died and will be permitted to play again in 72 hours.");
         DBApi.updateConfig(getConfig(), "messages.player-banned-join-message",
                 "You are still banned.");
         DBApi.updateConfig(getConfig(), "messages.prefix", "&f[&cDeathBans&f]");
